@@ -17,23 +17,23 @@ end_date = now.strftime('%F %T')
 sending_time = (Time.now + 30).strftime('%FT%T')
 
 begin
-	client = SmsRestClient.new(login, password)
+  client = SmsRestClient.new(login, password)
 rescue RestClient::Unauthorized => e
-	puts 'Не удалось авторизовать пользователя.'
-	puts "Ответ сервиса '%s'.\nКод ответа '%s'" % [e.response, e.message]
-	exit!
+  puts 'Не удалось авторизовать пользователя.'
+  puts "Ответ сервиса '%s'.\nКод ответа '%s'" % [e.response, e.message]
+  exit!
 end
 
-session_id = client.session_id	
-balance_before = client.get_user_balance	
+session_id = client.session_id
+balance_before = client.get_user_balance
 
-message_id = client.send_sms(source_address, destination_address, text)	
+message_id = client.send_sms(source_address, destination_address, text)
 message_ids = client.send_sms_bulk(source_address, [destination_address, destination_address], text)
-timezoned_message_id = client.send_sms_by_timezone(source_address, destination_address, text, sending_time)		
+timezoned_message_id = client.send_sms_by_timezone(source_address, destination_address, text, sending_time)
 
-balance_after = client.get_user_balance	
+balance_after = client.get_user_balance
 
-stats = client.get_sms_statistics(start_date, end_date)		
+stats = client.get_sms_statistics(start_date, end_date)
 state = client.get_sms_state(known_message_id)
 
 puts 'Идентификатор сессии ' + session_id
