@@ -4,7 +4,7 @@ require './sms-rest-client.rb'
 
 login, password = 'логин', 'пароль'
 source_address, destination_address = 'адрес отправителя', 'адрес получателя'
-text = 'Отправка работает!'
+text = 'Отправка работает.'
 
 known_message_id = 'Идентификатор известного сообщения' # WF3F22A2E
 
@@ -18,9 +18,9 @@ sending_time = (Time.now + 30).strftime('%FT%T')
 
 begin
   client = SmsRestClient.new(login, password)
-rescue RestClient::Unauthorized => e
+rescue RestClient::Forbidden => e
   puts 'Не удалось авторизовать пользователя.'
-  puts "Ответ сервиса '%s'.\nКод ответа '%s'" % [e.response, e.message]
+  puts "Код ответа '%s'." % [e.message]
   exit!
 end
 

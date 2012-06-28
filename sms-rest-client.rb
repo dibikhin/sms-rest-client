@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+require 'cgi'
 require 'json'
 require 'rest-client'
 
@@ -30,8 +31,8 @@ class SmsRestClient
     params = { :sessionId => @session_id,
                :sourceAddress => source_address,
                :data => data }
-    da_param = destination_addresses.map { |da| 'destinationAddresses=' + da } * '&'
-    result = execute { RestClient.post Host + '/Sms/SendBulk?' + da_param, params }
+    phones_param = destination_addresses.map { |phone| 'destinationAddresses=' + CGI.escape(phone) } * '&'
+    result = execute { RestClient.post Host + '/Sms/SendBulk?' + phones_param, params }
     JSON.parse(result) * ', '
   end
   
@@ -48,7 +49,7 @@ class SmsRestClient
   def get_sms_state(message_id)
     params = { :params => { :sessionId => @session_id, :messageId => message_id } }
     result = execute { RestClient.get Host + '/Sms/State', params }
-    JSON.parse result    
+    JSON.parse result
   end
   
   def get_sms_statistics(start_datetime, end_datetime)
@@ -77,13 +78,22 @@ class SmsRestClient
   
   def execute(&request)
     begin
-      request.call
+      return request.call
     rescue RestClient::Unauthorized
       @session_id = get_session_id
-      request.call
-    rescue RestClient::Forbidden
-      puts 'Не удалось выполнить запрос.'
-      puts "Ответ сервиса '%s'.\nКод ответа '%s'" % [e.response, e.message]
+      return request.call
+    rescue RestClient::Forbidden => e
+      puts_error(e)
+    rescue RestClient::BadRequest => e
+      puts_error(e)
     end
+    
+    exit!
+  end
+  
+  def puts_error(e)
+    puts 'Не удалось выполнить запрос.'
+    puts "Метод %s." % e.backtrace[11][/`.*/]
+    puts "Код ответа '%s'.\nОтвет сервиса '%s'." % [e.message, e.response]
   end
 end
